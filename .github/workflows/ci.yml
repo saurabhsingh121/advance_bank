@@ -17,7 +17,6 @@ jobs:
                     POSTGRES_DB: simple_bank
                     POSTGRES_USER: root
                     POSTGRES_PASSWORD: secret
-                    PGPORT: 5434
                 options: >-
                     --health-cmd pg_isready
                     --health-interval 10s
