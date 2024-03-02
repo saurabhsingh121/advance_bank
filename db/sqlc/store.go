@@ -1,3 +1,5 @@
+// Package db provides the implementation of the Store interface
+// for interacting with the database.
 package db
 
 import (
@@ -6,15 +8,23 @@ import (
 	"fmt"
 )
 
-type Store struct {
+// Store is an interface that defines the methods for interacting with the database.
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+// SQLStore is a concrete implementation of the Store interface.
+// It contains the *Queries struct and the *sql.DB instance.
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-// NewStore creates a new¯ Store instance.
+// NewStore creates a new Store instance.
 // It takes a *sql.DB as input and returns a pointer to a Store.
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -25,7 +35,7 @@ func NewStore(db *sql.DB) *Store {
 // and returns an error. The function wraps the execution of `fn` in a database
 // transaction and rolls back the transaction if there's an error.
 // Finally, it commits the transaction if there are no errors.
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	// Begin a new transaction on the store's database.
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -68,7 +78,7 @@ type TransferTxResult struct {
 // TransferTx performs a transfer transaction.
 // It transfers the specified amount from one account to another.
 // It creates transfer entries for both accounts and updates their balances.
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {

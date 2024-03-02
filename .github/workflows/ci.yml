@@ -39,6 +39,12 @@ jobs:
                   which migrate
             - name: Run migrations
               run: make migrateup
-
+              env:
+                  DB_DRIVER: postgres
+                  DB_SOURCE: postgresql://root:${{secrets.DB_PASSWORD}}@localhost:5434/simple_bank?sslmode=disable
             - name: Test
               run: make test
+              env:
+                  DB_DRIVER: postgres
+                  DB_SOURCE: postgresql://root:${{secrets.DB_PASSWORD}}@localhost:5434/simple_bank?sslmode=disable
+                  SERVER_ADDRESS: 0.0.0.0:8080
